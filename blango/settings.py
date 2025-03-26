@@ -32,7 +32,7 @@ class Dev(Configuration):
     # SECURITY WARNING: don't run with debug turned on in production!
     DEBUG = values.BooleanValue(True)
 
-    ALLOWED_HOSTS = values.ListValue(["localhost", "0.0.0.0", ".codio.io"])
+    ALLOWED_HOSTS = ["*"]
     X_FRAME_OPTIONS = 'ALLOW-FROM ' + os.environ.get('CODIO_HOSTNAME') + '-8000.codio.io'
     CSRF_COOKIE_SAMESITE = None
     CSRF_TRUSTED_ORIGINS = ['https://' + os.environ.get('CODIO_HOSTNAME') + '-8000.codio.io']
@@ -42,6 +42,10 @@ class Dev(Configuration):
     SESSION_COOKIE_SAMESITE = 'None'
     CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
     CRISPY_TEMPLATE_PACK = 'bootstrap5'
+
+    CACHE_MIDDLEWARE_ALIAS = "default"
+    CACHE_MIDDLEWARE_SECONDS = 300  # 5 minutes
+    CACHE_MIDDLEWARE_KEY_PREFIX = ""  # Optional but can help
 
 
     # Application definition
@@ -59,9 +63,12 @@ class Dev(Configuration):
     ]
 
     MIDDLEWARE = [
+        "django.middleware.cache.UpdateCacheMiddleware",  # Must be first
+        "django.middleware.common.CommonMiddleware",
+        "django.middleware.cache.FetchFromCacheMiddleware", 
         'django.middleware.security.SecurityMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
-        'django.middleware.common.CommonMiddleware',
+        # 'django.middleware.common.CommonMiddleware',
         #'django.middleware.csrf.CsrfViewMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
@@ -87,6 +94,14 @@ class Dev(Configuration):
     ]
 
     WSGI_APPLICATION = 'blango.wsgi.application'
+
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    }
+
 
 
     # Database
@@ -156,12 +171,18 @@ class Dev(Configuration):
                 "level": "ERROR",
                 "propagate": True,
             },
+            "django.cache": {  # Add this to debug caching
+                "handlers": ["console"],
+                "level": "DEBUG",
+                "propagate": False,
+            },
         },
         "root": {
             "handlers": ["console"],
             "level": "DEBUG",
         },
     }
+
 
     # Internationalization
     # https://docs.djangoproject.com/en/3.2/topics/i18n/
