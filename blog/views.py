@@ -28,7 +28,7 @@ def index(request):
     # cache_key = f"index_page_cache"
     # logger.debug(f"Cache Key: {cache_key}")
 
-    posts = Post.objects.filter(published_at__lte=timezone.now())
+    posts = Post.objects.filter(published_at__lte=timezone.now()).select_related("author")
     logger.debug("Got %d posts", len(posts))
 
     return render(request, "blog/index.html", {"posts": posts})
@@ -63,3 +63,7 @@ def post_detail(request,slug):
   logger.info("Created comment on Post %d for user %s", post.pk, request.user)
   print("DEBUG: Comment form:", comment_form)  # Debugging output
   return render(request,"blog/post-detail.html" , {"post":post , "comment_form":comment_form})
+
+def get_ip(request):
+  from django.http import HttpResponse
+  return HttpResponse(request.META['REMOTE_ADDR'])

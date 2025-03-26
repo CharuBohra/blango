@@ -47,6 +47,8 @@ class Dev(Configuration):
     CACHE_MIDDLEWARE_SECONDS = 300  # 5 minutes
     CACHE_MIDDLEWARE_KEY_PREFIX = ""  # Optional but can help
 
+    INTERNAL_IPS = ["192.168.10.226"]
+
 
     # Application definition
 
@@ -60,12 +62,14 @@ class Dev(Configuration):
         'blog',
         'crispy_forms',
         'crispy_bootstrap5',
+        'debug_toolbar',
     ]
 
     MIDDLEWARE = [
         "django.middleware.cache.UpdateCacheMiddleware",  # Must be first
         "django.middleware.common.CommonMiddleware",
         "django.middleware.cache.FetchFromCacheMiddleware", 
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
         'django.middleware.security.SecurityMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
         # 'django.middleware.common.CommonMiddleware',
